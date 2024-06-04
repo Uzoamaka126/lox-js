@@ -1,0 +1,19 @@
+{
+  "name": "lox-js",
+  "version": "1.0.0",
+  "description": "",
+  "main": "main.js",
+  "scripts": {
+    "dev": "node src/Lox.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Uzoamaka Anyanwu",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Uzoamaka126/lox-js/issues"
+  },
+  "homepage": "https://github.com/Uzoamaka126/lox-js#readme",
+  "bin": {
+    "jslox": "src/Lox.js"
+  }
+}
