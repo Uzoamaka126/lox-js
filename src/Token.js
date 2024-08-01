@@ -1,17 +1,17 @@
 module.exports = class Token {
-    TYPE;
-    LEXEMME;
-    LITERAL;
-    LINE;
+    static type; // enum
+    static lexemme; //string
+    static literal; // object
+    static line; // number
 
     constructor(type, lexeme, literal, line) {
-        this.TYPE = type;
-        this.LEXEMME = lexeme;
-        this.LITERAL = literal;
-        this.LINE = line;
+        this.type = type;
+        this.lexemme = lexeme;
+        this.literal = literal;
+        this.line = line;
     }
 
     toString() {
-        return this.TYPE + " " + this.LEXEMME + " " + this.LITERAL;
+        return this.type + " " + this.lexemme + " " + this.literal;
     }
 }

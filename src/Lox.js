@@ -20,8 +20,11 @@ const LoxError = require('./Error');
 // initiate a public class
 class Lox {
     _baseDir = path.join(__dirname, '/');
+    static hadError = false;
 
-    constructor() {}
+    constructor() {
+        this.baseDir = this._baseDir;
+    }
 
     static init(...args) {
         if (args.length > 1) {
@@ -35,23 +38,24 @@ class Lox {
         }
     }
 
-    // reads a file and executes it: opens a binary file, reads the contents of the file into a byte array, and then closes the file.
+    // reads a string file path and executes it: opens a binary file, reads the contents of the file into a byte array, and then closes the file.
     static #runFile(filePath) {
-        let bytes = [] // a byte array that holds read file contents
+        let bytes = [] // a byte array that holds the read file contents
 
         // callback function to run after the file read is successfully resolved or rejected
-        const callback = (err, strResult) => {
-            if (!err && strResult) {
-                console.log('File was successfully read', { strResult });
+        const callback = (type, err, result) => {
+            if (type === "success") {
+                console.log('File was successfully read');
+                
                 // transform byte array back to string by parsing
-                this.#run(result);
-
-                // indicate an error in the exit code
+                this.#run(result);                
+            } else {                
                 if (LoxError.hadError) {
                     process.exit(1);
                 }
-            } else {
-                console.log(`An error occurred`);
+                
+                // this.hadError = true;
+                // process.exit(1);
             }
         }
 
@@ -63,14 +67,14 @@ class Lox {
 
                 // Convert data buffer to byte array
                 const convertedStr = data.toString('utf8');
-              callback(err, convertedStr); // send back the converted string
+                callback("success", err, convertedStr); // send back the converted string
             } else {
-              callback(err, data);
+                callback("failure", err, data);
             }
         });
     }
 
-    // executes an interactive prompt
+    // executes an interactive prompt without the need for any arguments
     static #runPrompt() {
         // setup an input stream reader
         console.log('\x1b[35m%s\x1b[0m', "Listening in for user input:");
@@ -91,9 +95,10 @@ class Lox {
             const line = input;
 
             this.#run(line);
+            // this.hadError = false;
 
             // reset the error flag to avoid closing the prompt listener if an error occurs
-            LoxError.setError(false);
+            LoxError.setError(false); // used a separate class to do this, commenting out for now
 
             // reinitialize the prompt afterwards
             _interface.prompt();
@@ -109,12 +114,21 @@ class Lox {
     // run 
     static #run(source) {
         const scanner = new Scanner(source);
-        const tokens = scanner.scanTokens(); // List
+        const tokens = scanner.scanTokens(); // sequence of tokens
 
         for (let i = 0; i < tokens.length; i++) {
             console.log(tokens[i]);
         }
     }
+
+    // static error(line, message) {
+    //     this.report(line, "", message);
+    // }
+
+    // static #report(line, where, message) {
+    //     console.log('\x1b[39m%s\x1b[0m', "[line " + line + "] Error" + where + ": " + message);
+    //     this.hadError = true;
+    // }
 }
 
 Lox.init();

@@ -1,5 +1,5 @@
 // Enum/typings for tokens
-const TOKEN_TYPE = {
+module.exports = {
     // Single-character tokens
     LEFT_PAREN: '(',
     RIGHT_PAREN: ')',
@@ -50,5 +50,3 @@ const TOKEN_TYPE = {
         
     EOF: 'eof'
 };
-
-module.exports = TOKEN_TYPE;

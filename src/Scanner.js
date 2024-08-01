@@ -2,14 +2,13 @@ const TOKEN_TYPE = require('./TokenType');
 const Token = require('./Token');
 const LoxError = require('./Error');
 
-module.exports = class Scanner {
-    #SOURCE = ""; // raw source code
-    #IDENTIFIER = ""; // raw source code
-    #TOKENS = []; // list to fill with tokens generated
+class Scanner {
+    #SOURCE = ""; // raw source code as a string
+    #IDENTIFIER = "";
+    #TOKENS = []; // a default empty list to add generated tokens to
     #start = 0; // points to the first character in the lexeme being scannedd
     #current = 0; // points to the character being currently considered
     #line = 1; // tracks what source line "current" is on 
-    // #keywords = new Map();
 
     constructor(source = "") {
         this.#SOURCE = source;
@@ -104,6 +103,7 @@ module.exports = class Scanner {
 
     #match(expected = "") { // type character/string
         if (this.isAtEnd()) return false;
+        
         if (this.#SOURCE.charAt(this.#current) != expected) return false;
 
         this.#current++;
@@ -111,9 +111,14 @@ module.exports = class Scanner {
     }
 
     #peek() {
-        if (this.isAtEnd()) return;
+        if (this.isAtEnd()) return "\0";
         return this.#SOURCE.charAt(this.#current)
     }
+
+    #peekNext() {
+        if (this.#current + 1 >= this.#SOURCE.length()) return '\0';
+        return this.#SOURCE.charAt(current + 1);
+    } 
 
     #string() {
         while (this.#peek() != '"' && !this.isAtEnd()) {
@@ -150,7 +155,7 @@ module.exports = class Scanner {
         }
         const parsedNum = parseFloat(this.#SOURCE.substring(this.#start, this.#current))
 
-        this.#addToken(this.#number, parsedNum);
+        this.#addToken(TOKEN_TYPE.NUMBER, parsedNum);
     }
 
     #isDigit(c) {
@@ -164,7 +169,7 @@ module.exports = class Scanner {
 
     #identifier() {
         while (this.#isAlphanumeric(this.#peek)) {
-            this.#advance()
+            this.#advance();
 
             const text = this.#SOURCE.substring(this.#start, this.#current);
             let type = this.#keywords().get(text);
@@ -172,14 +177,15 @@ module.exports = class Scanner {
             if (type === null) {
                 type = this.#IDENTIFIER;
             }
-            this.#addToken(type)
+
+            this.#addToken(type);
         }
     }
 
     #isAlpha(char) {
         return (char >= 'a' && char <= 'z') || 
             (char >= 'A' && char <= 'Z') || 
-            char === '-';
+            char === '_';
     }
 
     #isAlphanumeric(char) {
@@ -217,3 +223,5 @@ module.exports = class Scanner {
         throw new LoxError(operator, "Operand must be a number.")
     }
 }
+
+export default Scanner;
