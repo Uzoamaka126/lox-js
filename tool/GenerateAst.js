@@ -1,19 +1,18 @@
 const fs = require('fs');
 const path = require('path');
 
+// Houses a generated Visitor class and a set of expression node classes that support the Visitor pattern using it.
+
 class GenerateAst {
     static main(args) {
         console.log(args.length, { args });
-        // if (args.length != 1) {
-        //     console.error("Usage: generate_ast <output directory>");
-        //     process.exit(64);
-        // }
 
-        const outputDir = args[0];
-
-        console.log({ outputDir });
+        if (args.length != 1) {
+            console.error("Usage: generate_ast <output directory>");
+            process.exit(64);
+        }
         
-        this.#defineAst(outputDir, "Expr", Array.from([
+        this.#defineAst("Expr", Array.from([
             "Binary   : Expr left, Token operator, Expr right",
             "Grouping : Expr expression",
             "Literal  : Object value",
@@ -21,82 +20,101 @@ class GenerateAst {
         ]));
     }
 
-    static #defineAst(outputDir, baseName, types = []) {
+    static #defineAst(baseName, types) {
         // const filePath = path.join(outputDir, `/${baseName}.js`);
         const filePath = path.join(__dirname, `/${baseName}.js`);
 
-        console.log({ filePath });
+        const writer = fs.createWriteStream(filePath, { encoding: 'utf8' });
 
-    //     const writer = fs.createWriteStream(filePath, { encoding: 'utf8' });
+        // writer.write('package com.craftinginterpreters.lox \n'); // writer.println("package com.craftinginterpreters.lox;");
+        // writer.write('\n');
+        // writer.write('Import statement here\n'); // writer.println("import java.util.List;");
+        // writer.write('\n');
+        writer.write(`class ${baseName} {\n  accept(visitor) {} \n}`);
 
-    //     writer.write('package com.craftinginterpreters.lox \n');
-    //     writer.write('\n');
-    //     writer.write('Import statement here\n');
-    //     writer.write('\n');
-    //     writer.write(`abstract class ${baseName} {\n`);
+        // The base accept() method.
+        writer.write('\n');
 
-    //     this.#defineVisitor(writer, baseName, types);
+        this.#defineVisitor(writer, baseName, types);
 
-    //    // The AST classes: Iterate over each type and define types
-    //     types.forEach((type) => {
-    //         const className = type.split(':')[0].trim();
-    //         const fields = type.split(':')[1].trim();
+        writer.write('\n');
 
-    //         this.#defineType(writer, baseName, className, fields);
-    //     });
+       // The AST classes: Iterate over each type and define types
+        types.forEach((type) => {
+            const splitStr = type.split(':');
 
-    //     // The base accept() method.
-    //     writer.write('\n');
-    //     writer.write("  abstract <R> R accept(Visitor<R> visitor);");
-      
-    //     writer.write('}\n');
-    //     writer.end();
+            const className = splitStr[0].trim();
+            const fields = splitStr[1].trim().replaceAll(/\b(Expr|Object|Token)\b/g, "").trim();
+
+            this.#defineType(writer, baseName, className, fields);
+        });
+
+        // export the Expr class before ending write stream
+        writer.write(`module.exports = {`);
+
+        writer.write(` ${baseName}, Visitor, Unary, Binary, Grouping, Literal }`);
+
+        writer.end();
     }
 
-    static #defineType(writer, baseName, className, fieldList) {
-        writer.write(`  static class  ${className} extends ${baseName} {`);
+    static #defineType(writer, baseName, className, fieldList) {        
+        writer.write(`class ${className} extends ${baseName} {`);
+        writer.write('\n');
 
         // Constructor.
-        writer.write(`  ${className} ( extends ${fieldList} ) {`);
+        writer.write(`  constructor(${fieldList}) {`);
+        writer.write('\n');
+        writer.write(`    super();`);
+        writer.write('\n');
 
         // Store parameters in fields.
         const fields = fieldList.split(", ");
-        fields.forEach((field) => {
-            const name = field.split(" ")[1];
 
-            writer.write(`      this. ${name} = ${name};`);
+        fields.forEach((field) => {
+            const name = field.trim();
+
+            writer.write(`    this.${name} = ${name};`);
+            writer.write('\n');
         });
 
-        writer.write("    }");
+        writer.write("  }");
 
         // Visitor pattern.
-        writer.write();
-        writer.write("    @Override");
-        writer.write("    <R> R accept(Visitor<R> visitor) {");
-        writer.write("      return visitor.visit" +
-            className + baseName + "(this);");
-        writer.write("    }");
-
-        // Fields.
         writer.write("\n");
-        fields.forEach((field) => {
-            writer.write(`    final ${field};`);
-        });
+        writer.write("  accept(visitor) {");
+        writer.write("\n");
+        writer.write("    return visitor.visit" + className + baseName + "(this);");
+        writer.write("\n");
+        writer.write("  }");
+        writer.write("\n");
 
-        writer.println("  }");
+        writer.write("}");
+        writer.write("\n");
+        writer.write("\n");
     }
 
     static #defineVisitor(writer, baseName, types) {
-        writer.write(`"  interface Visitor<R> {`);
+        writer.write('\n');
+        writer.write(`class Visitor {`);
+
+        writer.write('\n');
+        writer.write(`  print(${baseName.toLowerCase()}) {`);
+        writer.write('\n');
+        writer.write(`    return ${baseName.toLowerCase()}.accept(this)`);
+        writer.write('\n');
+        writer.write('  }');
 
         // Store parameters in fields.
         types.forEach((type) => {
             const typeName = type.split(":")[0].trim();
 
-            writer.write(`    R visit" ${typeName} ${baseName} (${typeName} ${baseName.toLowerCase()});`);
+            writer.write("\n");
+            writer.write(`  visit${typeName}${baseName}(${baseName.toLowerCase()}) {}`);
         });
 
-        writer.write("  }");
+        writer.write("\n");
+        writer.write("}");
+        writer.write('\n');
     }
 };
 
