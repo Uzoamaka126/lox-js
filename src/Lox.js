@@ -16,11 +16,12 @@ const path = require('path');
 const readline = require('readline');
 const Scanner = require('./Scanner');
 const LoxError = require('./Error');
+const Parser = require('./Parser');
+const { AstPrinter, Binary, Grouping, Literal, Unary } = require('./AstPrinter');
 
 // initiate a public class
 class Lox {
     _baseDir = path.join(__dirname, '/');
-    static hadError = false;
 
     constructor() {
         this.baseDir = this._baseDir;
@@ -116,19 +117,15 @@ class Lox {
         const scanner = new Scanner(source);
         const tokens = scanner.scanTokens(); // sequence of tokens
 
-        for (let i = 0; i < tokens.length; i++) {
-            console.log(tokens[i]);
-        }
+        const parser = new Parser(tokens);
+        const expression = parser.parse();
+
+        console.log({ expression });
+
+        if (LoxError.hadError) return;
+
+        console.log(new AstPrinter().print(expression))
     }
-
-    // static error(line, message) {
-    //     this.report(line, "", message);
-    // }
-
-    // static #report(line, where, message) {
-    //     console.log('\x1b[39m%s\x1b[0m', "[line " + line + "] Error" + where + ": " + message);
-    //     this.hadError = true;
-    // }
 }
 
 Lox.init();
