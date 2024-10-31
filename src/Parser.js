@@ -17,7 +17,6 @@ class Parser {
         try {
            return this.expression() 
         } catch (error) {
-            console.log({ parseErr: error });
             return null
         }
     }
@@ -78,7 +77,6 @@ class Parser {
 
     unary() {
         if (this.match(TOKEN_TYPE.BANG, TOKEN_TYPE.MINUS)) {
-            console.log('this.match(TOKEN_TYPE.BANG, TOKEN_TYPE.MINUS');
             const operator = this.previous();
             const right = this.unary();
 

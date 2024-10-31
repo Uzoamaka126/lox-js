@@ -97,15 +97,15 @@ const ast = new AstPrinter();
 // );
 
 
-const expression = new Binary(
-    new Binary(new Literal(6), '/', new Literal(3)),
-    "-",
-    new Binary(new Literal(1), '*', new Literal(4))
-);
+// const expression = new Binary(
+//     new Binary(new Literal(6), '/', new Literal(3)),
+//     "-",
+//     new Binary(new Literal(1), '*', new Literal(4))
+// );
 
-console.log({ expression });
+// console.log({ expression });
 
-console.log(ast.print(expression));  // Prints: (* (- 123) 45.67)
+// console.log(ast.print(expression));  // Prints: (* (- 123) 45.67)
 
 module.exports = {
     AstPrinter, Binary, Expr, Literal, Unary, Grouping
